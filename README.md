@@ -25,6 +25,8 @@ ByEdit 是一个黑科技级的编辑器伴侣，让你能够在 VSCode、Obsidi
    ```
 
 2. **启动编辑器**
+ - 双击 `edit.bat` 即可启动
+ - 或在命令行中运行
    ```bash
    # CMD
    edit
