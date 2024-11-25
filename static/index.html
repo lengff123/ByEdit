@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ByEdit - 同步编辑器</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --error-color: #f44336;
+            --bg-color: #f5f5f5;
+            --border-color: #ccc;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: #fff;
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .main-container {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .editor-div {
+            flex: 1;
+            width: 100%;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            padding: 15px;
+            box-sizing: border-box;
+            border: none;
+            outline: none;
+            transition: background-color 0.3s;
+            white-space: pre-wrap;
+            overflow-y: auto;
+        }
+
+        .editor-div:disabled {
+            background-color: #fff;
+            color: #000;
+            opacity: 0.8;
+        }
+
+        #editor.dragover {
+            background-color: rgba(76, 175, 80, 0.1);
+            border: 2px dashed var(--primary-color);
+        }
+
+        #editor:disabled {
+            background-color: #fff;
+            color: #000;
+            opacity: 0.8;
+        }
+
+        .status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        .connected { 
+            background-color: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .disconnected { 
+            background-color: var(--error-color);
+            box-shadow: 0 0 10px var(--error-color);
+        }
+
+        #backups-panel {
+            width: 250px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: fixed;
+            right: -270px;
+            top: 80px;
+            transition: right 0.3s ease;
+            z-index: 1000;
+        }
+
+        #backups-panel.show {
+            right: 20px;
+        }
+
+        #backups-panel h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        #backup-list {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .placeholder-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #999;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        .placeholder-text i {
+            display: block;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .shortcut-tip {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .shortcut-tip.show {
+            opacity: 1;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+</head>
+<body>
+    <div class="header">
+        <h1>ByEdit 同步编辑器</h1>
+        <div id="status" class="status"></div>
+    </div>
+
+    <div class="main-container">
+        <div class="editor-container">
+            <div id="editor" contenteditable="true" spellcheck="true" class="editor-div"></div>
+            <div class="placeholder-text">
+                <i class="fas fa-file-import"></i>
+                拖拽文件到此处打开
+            </div>
+        </div>
+
+        <div id="backups-panel">
+            <h3><i class="fas fa-history"></i> 历史备份</h3>
+            <select id="backup-list"></select>
+            <button onclick="restoreBackup()">
+                <i class="fas fa-undo"></i> 恢复
+            </button>
+        </div>
+    </div>
+
+    <div class="shortcut-tip" id="shortcut-tip">按 Ctrl+B 显示/隐藏备份面板</div>
+
+    <script>
+        console.log("页面加载开始");
+
+        let ws = null;
+        let isUpdating = false;
+        let fileHandle = null;
+        let syncInterval = null;
+        const editor = document.getElementById('editor');
+        const status = document.getElementById('status');
+
+        const INTERVALS = {
+            TYPING: 30,        // 从 50ms 减少到 30ms
+            ACTIVE: 500,       // 从 1500ms 减少到 500ms
+            IDLE: 1000,        // 从 3000ms 减少到 1000ms
+            INACTIVE: 2000     // 从 5000ms 减少到 2000ms
+        };
+        let lastEditTime = Date.now();
+        let currentSyncInterval = INTERVALS.INACTIVE;
+        const TYPING_INTERVAL = 1000;
+        let typingTimer;
+        let lastContent = '';
+
+        // 添加快捷键处理
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+B 切换备份面板
+            if (e.ctrlKey && e.key.toLowerCase() === 'b') {
+                e.preventDefault();
+                toggleBackupsPanel();
+            }
+        });
+
+        // 显示/隐藏备份面板
+        function toggleBackupsPanel() {
+            const panel = document.getElementById('backups-panel');
+            panel.classList.toggle('show');
+        }
+
+        async function handleFileOpen(handle) {
+            try {
+                console.log("Opening file:", handle.name);
+                fileHandle = handle;
+                const file = await fileHandle.getFile();
+                const content = await file.text();
+                console.log("File content loaded, length:", content.length);
+                
+                editor.textContent = content;
+                // 隐藏 placeholder
+                document.querySelector('.placeholder-text').style.display = 'none';
+                
+                connectWebSocket(fileHandle.name);
+                startFileSync();
+                updateBackupList();
+                
+                // 显示快捷键提示
+                const tip = document.getElementById('shortcut-tip');
+                tip.classList.add('show');
+                setTimeout(() => {
+                    tip.classList.remove('show');
+                }, 3000);
+            } catch (err) {
+                console.error("Error opening file:", err);
+                alert("Failed to open file: " + err.message);
+            }
+        }
+
+        // 拖放处理
+        editor.ondragover = (e) => {
+            e.preventDefault();
+            editor.classList.add('dragover');
+        };
+        
+        editor.ondragleave = () => {
+            editor.classList.remove('dragover');
+        };
+        
+        editor.ondrop = async (e) => {
+            e.preventDefault();
+            editor.classList.remove('dragover');
+            
+            if (e.dataTransfer.items) {
+                const item = e.dataTransfer.items[0];
+                if (item.kind === 'file') {
+                    try {
+                        const handle = await item.getAsFileSystemHandle();
+                        if (handle.kind === 'file') {
+                            await handleFileOpen(handle);
+                        }
+                    } catch (err) {
+                        console.error('Error opening dropped file:', err);
+                    }
+                }
+            }
+        };
+
+        // 文件同步
+        async function startFileSync() {
+            if (syncInterval) clearInterval(syncInterval);
+
+            async function sync() {
+                if (!fileHandle) return;
+                
+                try {
+                    const file = await fileHandle.getFile();
+                    const content = await file.text();
+                    
+                    if (content !== lastContent) {
+                        lastContent = content;
+                        if (content !== editor.textContent) {
+                            isUpdating = true;
+                            editor.textContent = content;
+                            if (ws?.readyState === WebSocket.OPEN) {
+                                ws.send(JSON.stringify({
+                                    type: "edit",
+                                    content: content
+                                }));
+                            }
+                            setTimeout(() => isUpdating = false, 100);
+                        }
+                    }
+
+                    const timeSinceLastEdit = Date.now() - lastEditTime;
+                    if (timeSinceLastEdit > 10000 && currentSyncInterval !== INTERVALS.INACTIVE) {
+                        currentSyncInterval = INTERVALS.INACTIVE;
+                        restartSync();
+                    }
+                } catch (err) {
+                    console.error('Error syncing file:', err);
+                }
+            }
+
+            function restartSync() {
+                clearInterval(syncInterval);
+                syncInterval = setInterval(sync, currentSyncInterval);
+            }
+
+            restartSync();
+        }
+
+        // WebSocket连接处理
+        function connectWebSocket(fileId) {
+            if (ws) ws.close();
+
+            ws = new WebSocket(`ws://${window.location.host}/ws/${encodeURIComponent(fileId)}`);
+            
+            ws.onopen = () => {
+                editor.disabled = false;
+                showStatus(true);
+            };
+
+            ws.onclose = () => {
+                editor.disabled = true;
+                showStatus(false);
+                // 显示 placeholder
+                document.querySelector('.placeholder-text').style.display = 'block';
+                setTimeout(() => {
+                    if (fileHandle) connectWebSocket(fileHandle.name);
+                }, 3000);
+            };
+
+            ws.onmessage = async (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === "shutdown") {
+                    alert("服务器即将关闭，请保存您的更改");
+                    // 自动保存当前内容
+                    if (fileHandle) {
+                        try {
+                            const writable = await fileHandle.createWritable();
+                            await writable.write(editor.textContent);
+                            await writable.close();
+                        } catch (err) {
+                            console.error('Error saving file before shutdown:', err);
+                        }
+                    }
+                    return;
+                }
+                if (data.type === "update" && !isUpdating) {
+                    try {
+                        const currentFile = await fileHandle.getFile();
+                        const currentContent = await currentFile.text();
+                        if (currentContent !== editor.textContent) {
+                            if (!confirm("文件已被其他程序修改，是否覆盖本地更改？")) {
+                                return;
+                            }
+                        }
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(data.content);
+                        await writable.close();
+                        editor.textContent = data.content;
+                    } catch (err) {
+                        console.error('Error handling file update:', err);
+                    }
+                }
+            };
+        }
+
+        // 添加差异计算函数
+        function calculateDiff(oldContent, newContent) {
+            // 简单的差异检测，返回变更的开始位置和内容
+            let start = 0;
+            while (start < oldContent.length && 
+                   start < newContent.length && 
+                   oldContent[start] === newContent[start]) {
+                start++;
+            }
+            
+            let end = 0;
+            while (end < oldContent.length - start && 
+                   end < newContent.length - start && 
+                   oldContent[oldContent.length - 1 - end] === newContent[newContent.length - 1 - end]) {
+                end++;
+            }
+            
+            return {
+                start,
+                content: newContent.slice(start, newContent.length - end),
+                oldLength: oldContent.length
+            };
+        }
+
+        // 修改编辑器输入处理
+        // editor.oninput = async () => 
+        editor.addEventListener('input', async (e) => {
+            if (!fileHandle || !ws || ws.readyState !== WebSocket.OPEN) return;
+            
+            lastEditTime = Date.now();
+            updateSyncInterval();
+
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(async () => {
+                try {
+                    const newContent = editor.textContent;
+                    const file = await fileHandle.getFile();
+                    const oldContent = await file.text();
+                    
+                    // 计算文件大小
+                    const fileSize = newContent.length;
+                    const isLargeFile = fileSize > 1000000; // 1MB
+                    
+                    // 计算内容差异
+                    const diff = calculateDiff(oldContent, newContent);
+                    const isDiffSmall = diff.content.length < 1000; // 小于1KB的修改
+                    
+                    // 根据文件大小和修改量选择同步策略
+                    if (isLargeFile) {
+                        if (isDiffSmall) {
+                            // 大文小修改：增量同步
+                            await sendIncrementalUpdate(diff);
+                        } else {
+                            // 大文件大修改：分块同步
+                            await sendChunkedUpdate(newContent);
+                        }
+                    } else {
+                        // 小文件：直接同步
+                        await sendFullUpdate(newContent);
+                    }
+                    
+                } catch (err) {
+                    console.error('Error syncing file:', err);
+                }
+            }, 300);
+        });
+
+        // 增量更新
+        async function sendIncrementalUpdate(diff) {
+            // 先更新本地文件
+            const writable = await fileHandle.createWritable();
+            await writable.seek(diff.start);
+            await writable.write(diff.content);
+            await writable.close();
+            
+            // 发送增量更新
+            ws.send(JSON.stringify({
+                type: "incremental_edit",
+                start: diff.start,
+                content: diff.content,
+                oldLength: diff.oldLength
+            }));
+        }
+
+        // 分块更新
+        async function sendChunkedUpdate(content) {
+            const chunkSize = 500000; // 500KB
+            const chunks = Math.ceil(content.length / chunkSize);
+            
+            // 先更新本地文件
+            const writable = await fileHandle.createWritable();
+            await writable.write(content);
+            await writable.close();
+            
+            // 发送分块更新
+            ws.send(JSON.stringify({
+                type: "chunked_edit_start",
+                totalChunks: chunks,
+                totalSize: content.length
+            }));
+            
+            for (let i = 0; i < chunks; i++) {
+                ws.send(JSON.stringify({
+                    type: "chunked_edit_chunk",
+                    chunk: i,
+                    content: content.slice(i * chunkSize, (i + 1) * chunkSize)
+                }));
+            }
+        }
+
+        // 完整更新
+        async function sendFullUpdate(content) {
+            const writable = await fileHandle.createWritable();
+            await writable.write(content);
+            await writable.close();
+            
+            ws.send(JSON.stringify({
+                type: "edit",
+                content: content
+            }));
+        }
+
+        function showStatus(connected) {
+            status.className = `status ${connected ? 'connected' : 'disconnected'}`;
+        }
+
+        // 优化同步间隔更新逻辑
+        function updateSyncInterval() {
+            const timeSinceLastEdit = Date.now() - lastEditTime;
+            let newInterval = INTERVALS.INACTIVE;
+            
+            if (timeSinceLastEdit < 3000) {
+                newInterval = INTERVALS.TYPING;
+            } else if (timeSinceLastEdit < 30000) {
+                newInterval = INTERVALS.ACTIVE;
+            } else if (timeSinceLastEdit < 300000) {
+                newInterval = INTERVALS.IDLE;
+            }
+
+            if (newInterval !== currentSyncInterval) {
+                currentSyncInterval = newInterval;
+                startFileSync();  // 重启同步定时器
+            }
+        }
+
+        async function createBackup() {
+            if (!fileHandle) return;
+            const file = await fileHandle.getFile();
+            const content = await file.text();
+            const timestamp = new Date().toISOString();
+            localStorage.setItem(`backup_${fileHandle.name}_${timestamp}`, content);
+            updateBackupList();
+        }
+
+        function updateBackupList() {
+            const backupList = document.getElementById('backup-list');
+            backupList.innerHTML = '';
+            
+            if (!fileHandle) return;
+            
+            // 获取当前文件的所有备份
+            const backups = Object.keys(localStorage)
+                .filter(key => key.startsWith(`backup_${fileHandle.name}_`))
+                .sort()
+                .reverse();
+            
+            backups.forEach(key => {
+                const option = document.createElement('option');
+                option.value = key;
+                const date = new Date(key.split('_')[2]);
+                option.textContent = date.toLocaleString(); // 更友好的时间格式
+                backupList.appendChild(option);
+            });
+        }
+
+        async function restoreBackup() {
+            const backupList = document.getElementById('backup-list');
+            const selectedKey = backupList.value;
+            if (!selectedKey || !fileHandle) return;
+            
+            const content = localStorage.getItem(selectedKey);
+            if (content) {
+                const writable = await fileHandle.createWritable();
+                await writable.write(content);
+                await writable.close();
+                editor.textContent = content;
+            }
+        }
+
+        // 定期创建备份（每5分钟）
+        setInterval(createBackup, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
