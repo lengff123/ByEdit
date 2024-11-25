@@ -180,6 +180,36 @@
         .shortcut-tip.show {
             opacity: 1;
         }
+
+        .preview-mode {
+            background-color: #fafafa;
+            cursor: default !important;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #preview-toggle {
+            background: transparent;
+            color: #666;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #preview-toggle.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        #preview-toggle:hover {
+            background: var(--primary-color);
+            color: white;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -188,7 +218,12 @@
 <body>
     <div class="header">
         <h1>ByEdit 同步编辑器</h1>
-        <div id="status" class="status"></div>
+        <div class="header-controls">
+            <button id="preview-toggle" title="Ctrl+P 切换预览模式">
+                <i class="fas fa-eye"></i>
+            </button>
+            <div id="status" class="status"></div>
+        </div>
     </div>
 
     <div class="main-container">
@@ -209,7 +244,7 @@
         </div>
     </div>
 
-    <div class="shortcut-tip" id="shortcut-tip">按 Ctrl+B 显示/隐藏备份面板</div>
+    <div class="shortcut-tip" id="shortcut-tip">按 Ctrl+B 显示/隐藏备份面板，按 Ctrl+P 切换预览/编辑模式</div>
 
     <script>
         console.log("页面加载开始");
@@ -233,14 +268,33 @@
         let typingTimer;
         let lastContent = '';
 
-        // 添加快捷键处理
+        let isPreviewMode = false;
+
+        // 添加预览模式切换处理
         document.addEventListener('keydown', (e) => {
             // Ctrl+B 切换备份面板
             if (e.ctrlKey && e.key.toLowerCase() === 'b') {
                 e.preventDefault();
                 toggleBackupsPanel();
             }
+            // Ctrl+P 切换预览模式
+            if (e.ctrlKey && e.key.toLowerCase() === 'p') {
+                e.preventDefault();
+                togglePreviewMode();
+            }
         });
+
+        // 切换预览模式
+        function togglePreviewMode() {
+            isPreviewMode = !isPreviewMode;
+            editor.contentEditable = !isPreviewMode;
+            editor.classList.toggle('preview-mode');
+            document.getElementById('preview-toggle').classList.toggle('active');
+            
+            // 更新按钮图标
+            const icon = document.querySelector('#preview-toggle i');
+            icon.className = isPreviewMode ? 'fas fa-edit' : 'fas fa-eye';
+        }
 
         // 显示/隐藏备份面板
         function toggleBackupsPanel() {
@@ -386,11 +440,11 @@
                     }
                     return;
                 }
-                if (data.type === "update" && !isUpdating) {
+                if (data.type === "update" && (!isUpdating || isPreviewMode)) {
                     try {
                         const currentFile = await fileHandle.getFile();
                         const currentContent = await currentFile.text();
-                        if (currentContent !== editor.textContent) {
+                        if (currentContent !== editor.textContent && !isPreviewMode) {
                             if (!confirm("文件已被其他程序修改，是否覆盖本地更改？")) {
                                 return;
                             }
@@ -431,9 +485,8 @@
         }
 
         // 修改编辑器输入处理
-        // editor.oninput = async () => 
         editor.addEventListener('input', async (e) => {
-            if (!fileHandle || !ws || ws.readyState !== WebSocket.OPEN) return;
+            if (!fileHandle || !ws || ws.readyState !== WebSocket.OPEN || isPreviewMode) return;
             
             lastEditTime = Date.now();
             updateSyncInterval();
