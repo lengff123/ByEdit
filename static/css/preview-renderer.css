@@ -1,0 +1,409 @@
+/* ==========================================================================
+   变量定义
+   ========================================================================== */
+   :root {
+    --text-color: #24292e;
+    --border-color: #eaecef;
+    --bg-light: #f6f8fa;
+    --bg-white: #ffffff;
+    --quote-color: #6a737d;
+    --link-blue: #2196F3;
+    --proof-green: #4CAF50;
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* ==========================================================================
+   1. 基础布局
+   ========================================================================== */
+.markdown-body,
+.latex-content{
+    padding: 1em;
+    max-width: 980px;
+    margin: 0 auto;
+    line-height: 1.3;
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+.markdown-body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-white);
+}
+
+/* ==========================================================================
+   2. Markdown 样式
+   ========================================================================== */
+/* 标题 */
+.markdown-body h1 {
+    font-size: 1.6em;
+    margin-bottom: 8px;
+}
+
+.markdown-body h2 {
+    font-size: 1.3em;
+    margin-top: 16px;
+    margin-bottom: 8px;
+}
+
+/* 段落和文本 */
+.markdown-body p {
+    margin: 0.3em 0;
+    line-height: 1.3;
+}
+
+.markdown-body strong {
+    font-weight: 600;
+}
+
+/* 列表 */
+.markdown-body ul {
+    padding-left: 1.5em;
+    margin-bottom: 8px;
+}
+
+.markdown-body li {
+    margin: 0.1em 0;
+    line-height: 1.3;
+}
+
+.markdown-body li > ul {
+    margin-top: 0.15em;
+}
+
+/* 代码 */
+.markdown-body code {
+    padding: 0.2em 0.4em;
+    margin: 0;
+    font-size: 90%;
+    background-color: rgba(27,31,35,0.05);
+    border-radius: 3px;
+    font-family: var(--font-mono);
+}
+
+.markdown-body pre code {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    word-break: normal;
+    white-space: pre;
+    background: transparent;
+    border: 0;
+}
+
+/* 表格 */
+.markdown-body .table-container {
+    overflow-x: auto;
+    margin-bottom: 16px;
+}
+
+.markdown-body table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.markdown-body table th,
+.markdown-body table td {
+    padding: 6px 13px;
+    border: 1px solid var(--border-color);
+}
+
+.markdown-body table tr:nth-child(2n) {
+    background-color: var(--bg-light);
+}
+
+/* 引用块 */
+.markdown-body blockquote {
+    padding: 0.3em 0.8em;
+    color: var(--quote-color);
+    border-left: 0.25em solid var(--border-color);
+    margin: 0 0 8px 0;
+}
+/* ==========================================================================
+   3. LaTeX 样式
+   ========================================================================== */
+
+/* 基础布局 */
+.latex-content p {
+    margin: 0.3em 0;
+    text-align: justify;
+    line-height: 1.3;
+}
+
+/* 标题样式 */
+.latex-title {
+    text-align: center;
+    margin-bottom: 2em;
+}
+
+.latex-title h1 {
+    font-size: 2em;
+    margin-bottom: 0.5em;
+}
+
+.latex-title .author {
+    font-size: 1.2em;
+    margin: 0.5em 0;
+}
+
+.latex-title .date {
+    font-size: 1em;
+    color: var(--quote-color);
+}
+
+.latex-content h2 {
+    margin-top: 24px;
+}
+
+.latex-content h3 {
+    font-size: 1.1em;
+    margin: 0.8em 0 0.4em;
+}
+
+.latex-content h4 {
+    font-size: 1em;
+    margin: 0.6em 0 0.3em;
+}
+
+/* 数学公式相关 */
+.katex {
+    font-size: 1.1em;
+    line-height: 1.2;
+}
+
+.katex-display {
+    margin: 1em 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    text-align: center;
+}
+
+.katex-display > .katex {
+    font-size: 1.21em;
+    white-space: normal;
+    text-align: center;
+}
+
+.katex-inline {
+    padding: 0 0.2em;
+}
+
+.matrix {
+    margin: 0.5em 0;
+}
+
+.align {
+    width: 100%;
+    padding: 10px 0;
+    margin: 1em 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    text-align: center;
+}
+
+.equation-number {
+    float: right;
+    color: var(--quote-color);
+}
+
+.math-error {
+    color: #f44336;
+    background: #ffebee;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+}
+
+/* 定理和证明环境 */
+.theorem,
+.proof {
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    background: var(--bg-light);
+}
+
+.theorem {
+    border-left: 3px solid var(--link-blue);
+}
+
+.proof {
+    border-left: 3px solid var(--proof-green);
+}
+/* 定理类环境统一样式 */
+.definition,
+.example,
+.remark {
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    background: var(--bg-light);
+}
+
+/* 个性化边框颜色 */
+.definition {
+    border-left: 3px solid #9C27B0;  /* 紫色 */
+}
+
+.example {
+    border-left: 3px solid #FF9800;  /* 橙色 */
+}
+
+.remark {
+    border-left: 3px solid #607D8B;  /* 蓝灰色 */
+}
+/* 算法环境 */
+.algorithm {
+    margin: 1em 0;
+    padding: 0.5em;
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    line-height: 1.4;
+}
+
+.algorithm-title {
+    font-weight: bold;
+    margin-bottom: 0.5em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.algorithm-body {
+    padding-left: 1.5em;
+    counter-reset: line;
+}
+
+.algorithm-comment {
+    color: #6a737d;
+    margin-left: 1em;
+}
+
+.algorithm-input,
+.algorithm-output {
+    font-weight: bold;
+    margin: 0.3em 0;
+}
+
+.algorithm-for,
+.algorithm-while,
+.algorithm-if,
+.algorithm-else {
+    margin: 0.2em 0;
+}
+
+.algorithm-state {
+    margin: 0.2em 0;
+    margin-left: 1em;
+}
+
+.algorithm-return {
+    margin: 0.2em 0;
+    font-weight: bold;
+}
+
+.algorithm-if + .algorithm-state,
+.algorithm-for + .algorithm-state,
+.algorithm-while + .algorithm-state {
+    margin-left: 2em;
+}
+
+.algorithm-state::before,
+.algorithm-for::before,
+.algorithm-if::before,
+.algorithm-while::before,
+.algorithm-return::before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    width: 1.5em;
+    margin-left: -2em;
+    margin-right: 0.5em;
+    color: #999;
+    text-align: right;
+}
+/* 数学符号样式 */
+.algorithm .math {
+    font-family: 'Times New Roman', serif;
+    font-style: italic;
+}
+
+/* 缩进控制 */
+.algorithm-indent {
+    margin-left: 2em;
+}
+
+/* eIf 结构样式 */
+.algorithm-eif {
+    margin: 0.2em 0;
+}
+
+/* 变量赋值样式 */
+.algorithm-assign {
+    margin: 0.2em 0;
+    margin-left: 1em;
+}
+
+/* 确保所有行都有行号 */
+.algorithm-body > div::before {
+    counter-increment: line;
+    content: counter(line);
+    display: inline-block;
+    width: 1.5em;
+    margin-left: -2em;
+    margin-right: 0.5em;
+    color: #999;
+    text-align: right;
+}
+/* 代码高亮 */
+.hljs {
+    background: var(--bg-light);
+    padding: 1em;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+/* 表格样式 */
+.tabular,
+.array {
+    margin: 0.5em 0;
+    overflow-x: auto;
+}
+
+/* 引用和脚注 */
+.citation {
+    color: var(--link-blue);
+    font-weight: 500;
+}
+
+.footnotes {
+    margin-top: 2em;
+    padding-top: 1em;
+    border-top: 1px solid var(--border-color);
+}
+
+.footnotes ol {
+    padding-left: 1em;
+}
+
+.footnote-ref {
+    font-size: 0.8em;
+    vertical-align: super;
+}
+
+/* 任务列表 */
+.task-list-item {
+    list-style-type: none;
+    margin-left: -1.5em;
+}
+
+.task-list-item input {
+    margin-right: 0.5em;
+}
+
+/* 隐藏参考文献相关元素 */
+.preview-mode.markdown-body .bibliography,
+.preview-mode.markdown-body .references,
+.preview-mode.markdown-body .cite {
+    display: none;
+}

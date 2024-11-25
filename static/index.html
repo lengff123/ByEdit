@@ -3,13 +3,15 @@
 <head>
     <title>ByEdit - 同步编辑器</title>
     <style>
+        /* 根变量定义 */
         :root {
-            --primary-color: #4CAF50;
-            --error-color: #f44336;
-            --bg-color: #f5f5f5;
-            --border-color: #ccc;
+            --primary-color: #4CAF50;    /* 主色调-绿色 */
+            --error-color: #f44336;      /* 错误色-红色 */
+            --bg-color: #f5f5f5;         /* 背景色-浅灰 */
+            --border-color: #ccc;        /* 边框色-灰色 */
         }
 
+        /* 基础布局 */
         body {
             margin: 0;
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -19,6 +21,7 @@
             height: 100vh;
         }
 
+        /* 头部样式 */
         .header {
             background: #fff;
             padding: 15px 20px;
@@ -34,6 +37,7 @@
             color: #333;
         }
 
+        /* 主容器样式 */
         .main-container {
             flex: 1;
             padding: 20px;
@@ -41,6 +45,7 @@
             gap: 20px;
         }
 
+        /* 编辑器容器样式 */
         .editor-container {
             flex: 1;
             display: flex;
@@ -51,6 +56,7 @@
             overflow: hidden;
         }
 
+        /* 编辑器区域样式 */
         .editor-div {
             flex: 1;
             width: 100%;
@@ -65,12 +71,14 @@
             overflow-y: auto;
         }
 
+        /* 编辑器禁用状态 */
         .editor-div:disabled {
             background-color: #fff;
             color: #000;
             opacity: 0.8;
         }
 
+        /* 拖拽状态样式 */
         #editor.dragover {
             background-color: rgba(76, 175, 80, 0.1);
             border: 2px dashed var(--primary-color);
@@ -82,6 +90,7 @@
             opacity: 0.8;
         }
 
+        /* 状态指示器样式 */
         .status {
             position: fixed;
             bottom: 20px;
@@ -103,6 +112,7 @@
             box-shadow: 0 0 10px var(--error-color);
         }
 
+        /* 备份面板样式 */
         #backups-panel {
             width: 250px;
             background: #fff;
@@ -134,6 +144,7 @@
             border-radius: 4px;
         }
 
+        /* 按钮样式 */
         button {
             background-color: var(--primary-color);
             color: white;
@@ -148,6 +159,7 @@
             background-color: #45a049;
         }
 
+        /* 占位文本样式 */
         .placeholder-text {
             position: absolute;
             top: 50%;
@@ -164,6 +176,7 @@
             margin-bottom: 10px;
         }
 
+        /* 快捷键提示样式 */
         .shortcut-tip {
             position: fixed;
             right: 20px;
@@ -181,39 +194,86 @@
             opacity: 1;
         }
 
-        .preview-mode {
-            background-color: #fafafa;
-            cursor: default !important;
-        }
-
+        /* 头部控制区样式 */
         .header-controls {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
+        /* 预览切换按钮样式 */
         #preview-toggle {
             background: transparent;
             color: #666;
             padding: 5px 10px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
         }
 
-        #preview-toggle.active {
+        #preview-toggle.active,
+        #preview-toggle:hover {
+            background: var(--proof-green);
+            color: white;
+            border-color: var(--proof-green);
+        }
+
+        /* 预览模式样式 */
+        .preview-mode {
+            background-color: var(--bg-light);
+            cursor: default !important;
+            box-sizing: border-box;
+            min-width: 200px;
+            padding: 1em;
+            max-width: 980px;
+            margin: 0 auto;
+            line-height: 1.3;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        #enhanced-preview-toggle {
+            background: transparent;
+            color: #666;
+            padding: 5px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+
+        #enhanced-preview-toggle.active {
             background: var(--primary-color);
             color: white;
             border-color: var(--primary-color);
         }
 
-        #preview-toggle:hover {
+        #enhanced-preview-toggle:hover {
             background: var(--primary-color);
             color: white;
+            border-color: var(--primary-color);
         }
     </style>
+
+
+    </style>
+    <!-- 基础样式 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+    
+    <!-- Markdown和latex 渲染相关样式 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.2.0/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/styles/github.min.css">
+    <link rel="stylesheet" href="static/css/preview-renderer.css">
+    
+    <!-- Markdown 解析相关脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.2/dist/markdown-it.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-task-lists@2.1.1/dist/markdown-it-task-lists.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-sup@1.0.0/dist/markdown-it-sup.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-sub@1.0.0/dist/markdown-it-sub.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-footnote@3.0.3/dist/markdown-it-footnote.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-emoji@2.0.2/dist/markdown-it-emoji.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
 </head>
 <body>
     <div class="header">
@@ -221,6 +281,9 @@
         <div class="header-controls">
             <button id="preview-toggle" title="Ctrl+P 切换预览模式">
                 <i class="fas fa-eye"></i>
+            </button>
+            <button id="enhanced-preview-toggle" title="切换增强预览" style="display: none;">
+                <i class="fas fa-magic"></i>
             </button>
             <div id="status" class="status"></div>
         </div>
@@ -246,6 +309,11 @@
 
     <div class="shortcut-tip" id="shortcut-tip">按 Ctrl+B 显示/隐藏备份面板，按 Ctrl+P 切换预览/编辑模式</div>
 
+    <!-- markdown和latex数学公式和代码高亮相关脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-katex@2.0.3/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
+    <script src="static/js/preview-renderer.js"></script>
     <script>
         console.log("页面加载开始");
 
@@ -269,6 +337,9 @@
         let lastContent = '';
 
         let isPreviewMode = false;
+        let previewRenderer = null;
+        let originalContent = '';
+        let isEnhancedPreview = false;
 
         // 添加预览模式切换处理
         document.addEventListener('keydown', (e) => {
@@ -287,14 +358,78 @@
         // 切换预览模式
         function togglePreviewMode() {
             isPreviewMode = !isPreviewMode;
-            editor.contentEditable = !isPreviewMode;
-            editor.classList.toggle('preview-mode');
-            document.getElementById('preview-toggle').classList.toggle('active');
+            const previewToggleBtn = document.getElementById('preview-toggle');
+            const enhancedPreviewBtn = document.getElementById('enhanced-preview-toggle');
+            
+            if (isPreviewMode) {
+                // 显示增强预览切换按钮
+                enhancedPreviewBtn.style.display = 'inline-block';
+                // 进入预览模式前保存原始内容
+                originalContent = editor.textContent;
+                
+                editor.contentEditable = false;
+                editor.classList.add('preview-mode');
+                if (isEnhancedPreview) {
+                    editor.classList.add('markdown-body');
+                }
+                previewToggleBtn.classList.add('active');
+                
+                renderPreview();
+            } else {
+                // 隐藏增强预览切换按钮
+                enhancedPreviewBtn.style.display = 'none';
+                // 退出预览模式
+                editor.contentEditable = true;
+                editor.classList.remove('preview-mode', 'markdown-body');
+                previewToggleBtn.classList.remove('active');
+                
+                // 恢复保存的原始内容
+                editor.textContent = originalContent;
+            }
             
             // 更新按钮图标
-            const icon = document.querySelector('#preview-toggle i');
+            const icon = previewToggleBtn.querySelector('i');
             icon.className = isPreviewMode ? 'fas fa-edit' : 'fas fa-eye';
         }
+
+        // 切换增强预览
+        function toggleEnhancedPreview() {
+            if (!isPreviewMode) return;
+            
+            isEnhancedPreview = !isEnhancedPreview;
+            const enhancedPreviewBtn = document.getElementById('enhanced-preview-toggle');
+            
+            if (isEnhancedPreview) {
+                editor.classList.add('markdown-body');
+                enhancedPreviewBtn.classList.add('active');
+            } else {
+                editor.classList.remove('markdown-body');
+                enhancedPreviewBtn.classList.remove('active');
+            }
+            
+            renderPreview();
+        }
+
+        // 渲染预览内容
+        function renderPreview() {
+            if (!isPreviewMode) return;
+            
+            if (isEnhancedPreview) {
+                // 使用增强预览渲染
+                if (!previewRenderer) {
+                    previewRenderer = new PreviewRenderer();
+                }
+                const fileType = fileHandle ? previewRenderer.getFileType(fileHandle.name) : 'txt';
+                const renderedContent = previewRenderer.render(originalContent, fileType);
+                editor.innerHTML = renderedContent;
+            } else {
+                // 基础预览渲染
+                editor.textContent = originalContent;
+            }
+        }
+
+        // 添加增强预览按钮事件监听
+        document.getElementById('enhanced-preview-toggle').addEventListener('click', toggleEnhancedPreview);
 
         // 显示/隐藏备份面板
         function toggleBackupsPanel() {
@@ -311,8 +446,8 @@
                 console.log("File content loaded, length:", content.length);
                 
                 editor.textContent = content;
-                // 隐藏 placeholder
-                document.querySelector('.placeholder-text').style.display = 'none';
+                // 确保隐藏 placeholder
+                hideFilePlaceholder();
                 
                 connectWebSocket(fileHandle.name);
                 startFileSync();
@@ -374,7 +509,17 @@
                         lastContent = content;
                         if (content !== editor.textContent) {
                             isUpdating = true;
-                            editor.textContent = content;
+                            if (isPreviewMode) {
+                                // 在预览模式下，重新渲染内容
+                                if (!previewRenderer) {
+                                    previewRenderer = new PreviewRenderer();
+                                }
+                                const fileType = previewRenderer.getFileType(fileHandle.name);
+                                const renderedContent = previewRenderer.render(content, fileType);
+                                editor.innerHTML = renderedContent;
+                            } else {
+                                editor.textContent = content;
+                            }
                             if (ws?.readyState === WebSocket.OPEN) {
                                 ws.send(JSON.stringify({
                                     type: "edit",
@@ -417,8 +562,10 @@
             ws.onclose = () => {
                 editor.disabled = true;
                 showStatus(false);
-                // 显示 placeholder
-                document.querySelector('.placeholder-text').style.display = 'block';
+                // 只有在没有文件打开时才显示 placeholder
+                if (!fileHandle) {
+                    showFilePlaceholder();
+                }
                 setTimeout(() => {
                     if (fileHandle) connectWebSocket(fileHandle.name);
                 }, 3000);
@@ -426,33 +573,23 @@
 
             ws.onmessage = async (event) => {
                 const data = JSON.parse(event.data);
-                if (data.type === "shutdown") {
-                    alert("服务器即将关闭，请保存您的更改");
-                    // 自动保存当前内容
-                    if (fileHandle) {
-                        try {
-                            const writable = await fileHandle.createWritable();
-                            await writable.write(editor.textContent);
-                            await writable.close();
-                        } catch (err) {
-                            console.error('Error saving file before shutdown:', err);
-                        }
-                    }
-                    return;
-                }
                 if (data.type === "update" && (!isUpdating || isPreviewMode)) {
                     try {
-                        const currentFile = await fileHandle.getFile();
-                        const currentContent = await currentFile.text();
-                        if (currentContent !== editor.textContent && !isPreviewMode) {
-                            if (!confirm("文件已被其他程序修改，是否覆盖本地更改？")) {
-                                return;
-                            }
-                        }
                         const writable = await fileHandle.createWritable();
                         await writable.write(data.content);
                         await writable.close();
-                        editor.textContent = data.content;
+                        
+                        if (isPreviewMode) {
+                            // 在预览模式下，重新渲染内容
+                            if (!previewRenderer) {
+                                previewRenderer = new PreviewRenderer();
+                            }
+                            const fileType = previewRenderer.getFileType(fileHandle.name);
+                            const renderedContent = previewRenderer.render(data.content, fileType);
+                            editor.innerHTML = renderedContent;
+                        } else {
+                            editor.textContent = data.content;
+                        }
                     } catch (err) {
                         console.error('Error handling file update:', err);
                     }
@@ -650,6 +787,15 @@
 
         // 定期创建备份（每5分钟）
         setInterval(createBackup, 5 * 60 * 1000);
+
+        // 添加新的 placeholder 控制函数
+        function hideFilePlaceholder() {
+            document.querySelector('.placeholder-text').style.display = 'none';
+        }
+
+        function showFilePlaceholder() {
+            document.querySelector('.placeholder-text').style.display = 'block';
+        }
     </script>
 </body>
 </html>
